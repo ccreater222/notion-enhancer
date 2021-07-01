@@ -12,6 +12,7 @@ const fs = require('fs-extra'),
   { extractAll } = require('asar'),
   { readline, realpath, getNotionResources } = require('./helpers.js'),
   { version } = require('../package.json');
+const { resolve } = require('path');
 
 // === title ===
 //  ...information
@@ -121,7 +122,7 @@ module.exports = async function ({ overwrite_version, friendly_errors } = {}) {
       const insertion_file = path.resolve(
         `${__notion}/app/${insertion_target}`
       );
-      if (insertion_target === 'main/main.js') {
+      if (insertion_target === path.join('main/main.js')) {
         // https://github.com/notion-enhancer/notion-enhancer/issues/160
         // patch the notion:// url scheme/protocol to work on linux
         fs.readFile(insertion_file, 'utf8', (err, data) => {
@@ -136,6 +137,9 @@ module.exports = async function ({ overwrite_version, friendly_errors } = {}) {
               .replace(
                 /else \{[\s\n]+const win = createWindow_1\.createWindow\(relativeUrl\);/g,
                 'else if (relativeUrl) { const win = createWindow_1.createWindow(relativeUrl);'
+              ).replace(
+                'async function handleReady() {',
+                'async function handleReady() {\nconst constants_1 = require("../shared/constants");let session = electron_1.session.fromPartition(constants_1.electronSessionPartition);await session.setProxy({proxyRules: process.env.Notion_PROXY||null});\n'
               )}\n\n//notion-enhancer\nrequire('${realpath(
               __dirname
             )}/loader.js')(__filename, exports);`,

@@ -16,7 +16,7 @@ module.exports = (store, __exports) => {
     is_win = process.platform === 'win32',
     helpers = require('../../pkg/helpers.js'),
     getAllWindows = electron.BrowserWindow.getAllWindows;
-
+    
   function newWindow() {
     require('./createWindow.js')(
       store,
